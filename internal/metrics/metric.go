@@ -3,7 +3,7 @@ package metrics
 import "errors"
 
 var (
-	ErrIncorrectMetricValue = errors.New("Incorrect metric value")
+	ErrIncorrectMetricValue = errors.New("incorrect metric value")
 )
 
 type Metric interface {

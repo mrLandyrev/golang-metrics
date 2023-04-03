@@ -3,7 +3,7 @@ package metrics
 import "errors"
 
 var (
-	ErrUnknownMetricKind = errors.New("Unknown metric kind detected")
+	ErrUnknownMetricKind = errors.New("unknown metric kind detected")
 )
 
 type Factory struct{}
