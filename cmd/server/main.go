@@ -3,16 +3,18 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
+
+	"github.com/mrLandyrev/golang-metrics/internal/metrics"
 )
 
 var (
-	couter = map[string]int64{}
-	guage  = map[string]float64{}
+	metricsService *metrics.Service
 )
 
 func main() {
+	metricsService = metrics.NewService(metrics.NewMemoryRepository(), metrics.NewFactory())
+
 	router := http.NewServeMux()
 	router.HandleFunc("/update/", handleUpdate)
 	router.HandleFunc("/get/", handleGet)
@@ -22,28 +24,34 @@ func main() {
 
 func handleUpdate(w http.ResponseWriter, r *http.Request) {
 	segments := strings.Split(r.URL.Path, "/")
-	metricType := segments[2]
-	metricName := segments[3]
+	kind := segments[2]
+	name := segments[3]
+	value := segments[4]
 
-	switch metricType {
-	case "counter":
-		metricValue, _ := strconv.ParseInt(segments[4], 10, 64)
-		couter[metricName] += metricValue
-	case "guage":
-		metricValue, _ := strconv.ParseFloat(segments[4], 64)
-		guage[metricName] = metricValue
+	err := metricsService.AddRecord(kind, name, value)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 }
 
 func handleGet(w http.ResponseWriter, r *http.Request) {
 	segments := strings.Split(r.URL.Path, "/")
-	metricType := segments[2]
-	metricName := segments[3]
+	kind := segments[2]
+	name := segments[3]
 
-	switch metricType {
-	case "counter":
-		fmt.Fprint(w, couter[metricName])
-	case "guage":
-		fmt.Fprint(w, guage[metricName])
+	item, err := metricsService.GetRecord(kind, name)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
+
+	if item == nil {
+		w.WriteHeader(http.StatusNotFound)
+		fmt.Fprint(w, "Metric not found")
+		return
+	}
+
+	fmt.Fprint(w, item.GetStrValue())
 }
