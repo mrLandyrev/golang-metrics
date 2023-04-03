@@ -6,12 +6,14 @@ type Service struct {
 }
 
 func (service *Service) AddRecord(kind string, name string, value string) error {
+	// find item in storage
 	item, err := service.repository.GetByKindAndName(kind, name)
 
 	if err != nil {
 		return err
 	}
 
+	// create item if not found in storage
 	if item == nil {
 		item, err = (*service.factory).GetMetric(kind, name)
 
@@ -20,12 +22,14 @@ func (service *Service) AddRecord(kind string, name string, value string) error 
 		}
 	}
 
+	// apply raw value (how to interpret value encapsulated in metric)
 	err = item.AddStrValue(value)
 
 	if err != nil {
 		return err
 	}
 
+	// save to storage
 	return service.repository.Persist(item)
 }
 

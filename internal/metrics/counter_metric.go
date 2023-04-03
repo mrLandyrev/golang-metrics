@@ -18,7 +18,7 @@ func (counter *CounterMetric) GetKind() string {
 func (counter *CounterMetric) AddStrValue(value string) error {
 	convertedValue, err := strconv.ParseInt(value, 10, 64)
 	if err != nil {
-		return err
+		return ErrIncorrectMetricValue
 	}
 
 	counter.value += convertedValue

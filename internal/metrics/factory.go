@@ -2,16 +2,20 @@ package metrics
 
 import "errors"
 
+var (
+	ErrUnknownMetricKind = errors.New("Unknown metric kind detected")
+)
+
 type Factory struct{}
 
 func (factory *Factory) GetMetric(kind string, name string) (Metric, error) {
 	switch kind {
 	case "counter":
 		return NewCounterMetric(name), nil
-	case "guage":
-		return NewGuageMetric(name), nil
+	case "gauge":
+		return NewGaugeMetric(name), nil
 	default:
-		return nil, errors.New("NOT IMPLEMENTED")
+		return nil, ErrUnknownMetricKind
 	}
 }
 
