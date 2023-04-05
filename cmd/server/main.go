@@ -16,8 +16,8 @@ func main() {
 	metricsService := service.NewDefaultMetricsService(metricsRepository, metricsFactory)
 
 	router := router.NewRouter()
-	router.Use("POST", "/update/:kind/:name/:value", handlers.GetUpdateMetricHandler(metricsService))
-	router.Use("GET", "/get/:kind/:name", handlers.GetGetMetricHandler(metricsService))
+	router.Use("POST", "/update/:kind/:name/:value", handlers.BuildUpdateMetricHandler(metricsService))
+	router.Use("GET", "/get/:kind/:name", handlers.BuildGetMetricHandler(metricsService))
 
 	http.ListenAndServe(":8080", router)
 }

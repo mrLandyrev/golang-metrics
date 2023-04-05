@@ -10,7 +10,7 @@ import (
 	"github.com/mrLandyrev/golang-metrics/pkg/router"
 )
 
-func GetUpdateMetricHandler(metricsService service.MetricsService) func(c *router.Context) {
+func BuildUpdateMetricHandler(metricsService service.MetricsService) func(c *router.Context) {
 	return func(c *router.Context) {
 		err := metricsService.AddRecord(c.PathParams["kind"], c.PathParams["name"], c.PathParams["value"])
 
@@ -30,7 +30,7 @@ func GetUpdateMetricHandler(metricsService service.MetricsService) func(c *route
 	}
 }
 
-func GetGetMetricHandler(metricsService service.MetricsService) func(c *router.Context) {
+func BuildGetMetricHandler(metricsService service.MetricsService) func(c *router.Context) {
 	return func(c *router.Context) {
 		item, err := metricsService.GetRecord(c.PathParams["kind"], c.PathParams["name"])
 
