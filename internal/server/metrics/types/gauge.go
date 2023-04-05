@@ -15,7 +15,7 @@ func (gauge *GaugeMetric) GetKind() string {
 	return "gauge"
 }
 
-func (gauge *GaugeMetric) AddStrValue(value string) error {
+func (gauge *GaugeMetric) AddValue(value string) error {
 	convertedValue, err := strconv.ParseFloat(value, 64)
 	if err != nil {
 		return ErrIncorrectMetricValue
@@ -26,7 +26,7 @@ func (gauge *GaugeMetric) AddStrValue(value string) error {
 	return nil
 }
 
-func (gauge *GaugeMetric) GetStrValue() string {
+func (gauge *GaugeMetric) GetValue() string {
 	return strconv.FormatFloat(gauge.value, 'E', -1, 64)
 }
 

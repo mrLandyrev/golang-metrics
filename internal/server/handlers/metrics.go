@@ -44,6 +44,6 @@ func GetGetMetricHandler(metricsService service.MetricsService) func(c *router.C
 			return
 		}
 
-		fmt.Fprint(c.Response, item.GetStrValue())
+		fmt.Fprint(c.Response, item.GetValue())
 	}
 }

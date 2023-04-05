@@ -29,7 +29,7 @@ func (service *DefaultMetricsService) AddRecord(kind string, name string, value 
 	}
 
 	// apply raw value (how to interpret value encapsulated in metric)
-	err = item.AddStrValue(value)
+	err = item.AddValue(value)
 
 	if err != nil {
 		return err

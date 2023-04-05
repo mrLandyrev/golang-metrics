@@ -9,6 +9,6 @@ var (
 type Metric interface {
 	GetName() string
 	GetKind() string
-	AddStrValue(value string) error
-	GetStrValue() string
+	AddValue(value string) error
+	GetValue() string
 }
