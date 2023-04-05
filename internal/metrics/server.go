@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/mrLandyrev/golang-metrics/internal/router"
+	"github.com/mrLandyrev/golang-metrics/internal/server/router"
 )
 
 type Server struct {
@@ -19,38 +19,38 @@ func (server *Server) Listen() {
 	http.ListenAndServe(":8080", router)
 }
 
-func (server *Server) updateHandler(w http.ResponseWriter, r *http.Request, c *router.Context) {
-	err := server.metricsService.AddRecord(c.GetPathParam("kind"), c.GetPathParam("name"), c.GetPathParam("value"))
+func (server *Server) updateHandler(c *router.Context) {
+	err := server.metricsService.AddRecord(c.PathParams["kind"], c.PathParams["name"], c.PathParams["value"])
 
 	switch err {
 	case nil:
 		break
 	case ErrUnknownMetricKind:
-		w.WriteHeader(http.StatusNotImplemented)
+		c.Response.WriteHeader(http.StatusNotImplemented)
 		return
 	case ErrIncorrectMetricValue:
-		w.WriteHeader(http.StatusBadRequest)
+		c.Response.WriteHeader(http.StatusBadRequest)
 		return
 	default:
-		w.WriteHeader(http.StatusInternalServerError)
+		c.Response.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 }
 
-func (server *Server) getHandler(w http.ResponseWriter, r *http.Request, c *router.Context) {
-	item, err := server.metricsService.GetRecord(c.GetPathParam("kind"), c.GetPathParam("name"))
+func (server *Server) getHandler(c *router.Context) {
+	item, err := server.metricsService.GetRecord(c.PathParams["kind"], c.PathParams["name"])
 
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		c.Response.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	if item == nil {
-		w.WriteHeader(http.StatusNotFound)
+		c.Response.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	fmt.Fprint(w, item.GetStrValue())
+	fmt.Fprint(c.Response, item.GetStrValue())
 }
 
 func NewServer(metricsService *Service) *Server {

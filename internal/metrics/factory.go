@@ -1,11 +1,5 @@
 package metrics
 
-import "errors"
-
-var (
-	ErrUnknownMetricKind = errors.New("unknown metric kind detected")
-)
-
 type Factory struct{}
 
 func (factory *Factory) GetMetric(kind string, name string) (Metric, error) {

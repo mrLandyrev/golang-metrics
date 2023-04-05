@@ -27,10 +27,6 @@ func (storage *MemoryRepository) Persist(item Metric) error {
 	return nil
 }
 
-func (storage *MemoryRepository) Flush() error {
-	return nil
-}
-
 func NewMemoryRepository() *MemoryRepository {
 	return &MemoryRepository{}
 }

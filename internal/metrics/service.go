@@ -1,5 +1,10 @@
 package metrics
 
+type MetricsService interface {
+	AddMetric(kind string, name string, value string) error
+	GetMetric(kind string, name string) (Metric, error)
+}
+
 type Service struct {
 	repository Repository
 	factory    *Factory
