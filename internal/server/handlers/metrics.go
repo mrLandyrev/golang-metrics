@@ -5,12 +5,16 @@ import (
 	"net/http"
 
 	"github.com/mrLandyrev/golang-metrics/internal/server/metrics/factory"
-	"github.com/mrLandyrev/golang-metrics/internal/server/metrics/service"
-	"github.com/mrLandyrev/golang-metrics/internal/server/metrics/types"
+	"github.com/mrLandyrev/golang-metrics/internal/server/metrics/models"
 	"github.com/mrLandyrev/golang-metrics/pkg/router"
 )
 
-func BuildUpdateMetricHandler(metricsService service.MetricsService) func(c *router.Context) {
+type MetricsService interface {
+	AddRecord(kind string, name string, value string) error
+	GetRecord(kind string, name string) (models.Metric, error)
+}
+
+func BuildUpdateMetricHandler(metricsService MetricsService) func(c *router.Context) {
 	return func(c *router.Context) {
 		err := metricsService.AddRecord(c.PathParams["kind"], c.PathParams["name"], c.PathParams["value"])
 
@@ -20,7 +24,7 @@ func BuildUpdateMetricHandler(metricsService service.MetricsService) func(c *rou
 		case factory.ErrUnknownMetricKind:
 			c.Response.WriteHeader(http.StatusNotImplemented)
 			return
-		case types.ErrIncorrectMetricValue:
+		case factory.ErrIncorrectMetricValue:
 			c.Response.WriteHeader(http.StatusBadRequest)
 			return
 		default:
@@ -30,7 +34,7 @@ func BuildUpdateMetricHandler(metricsService service.MetricsService) func(c *rou
 	}
 }
 
-func BuildGetMetricHandler(metricsService service.MetricsService) func(c *router.Context) {
+func BuildGetMetricHandler(metricsService MetricsService) func(c *router.Context) {
 	return func(c *router.Context) {
 		item, err := metricsService.GetRecord(c.PathParams["kind"], c.PathParams["name"])
 

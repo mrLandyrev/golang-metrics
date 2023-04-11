@@ -12,8 +12,8 @@ import (
 
 func main() {
 	metricsRepository := repository.NewMemoryMetricsRepository()
-	metricsFactory := factory.NewDefaultMetricsFactory()
-	metricsService := service.NewDefaultMetricsService(metricsRepository, metricsFactory)
+	metricsFactory := factory.NewMetricsFactory()
+	metricsService := service.NewMetricsService(metricsRepository, metricsFactory)
 
 	router := router.NewRouter()
 	router.Use("POST", "/update/:kind/:name/:value", handlers.BuildUpdateMetricHandler(metricsService))
