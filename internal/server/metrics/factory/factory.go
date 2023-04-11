@@ -3,7 +3,6 @@ package factory
 import (
 	"errors"
 
-	"github.com/mrLandyrev/golang-metrics/internal/agent/metrics/types"
 	"github.com/mrLandyrev/golang-metrics/internal/server/metrics/models"
 )
 
@@ -17,9 +16,9 @@ type MetricsFactory struct{}
 func (factory *MetricsFactory) GetInstance(kind string, name string) (models.Metric, error) {
 	switch kind {
 	case "counter":
-		return types.NewCounterMetric(name), nil
+		return NewCounterMetric(name), nil
 	case "gauge":
-		return types.NewGaugeMetric(name), nil
+		return NewGaugeMetric(name), nil
 	default:
 		return nil, ErrUnknownMetricKind
 	}
