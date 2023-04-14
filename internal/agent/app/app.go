@@ -47,7 +47,7 @@ func NewApp() *App {
 	collectService.RegisterExporter(exporters.NewRandomExproter())
 	collectService.RegisterExporter(exporters.NewRuntimeExporter())
 
-	syncClient := client.NewHttpClient()
+	syncClient := client.NewHTTPClient()
 	syncService := service.NewSyncService(metricsRepository, syncClient)
 
 	return &App{syncService: syncService, collectService: collectService}
