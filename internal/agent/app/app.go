@@ -34,10 +34,10 @@ type App struct {
 func (app *App) Run() {
 	var i int64
 	for i = 1; ; i++ {
-		if i%app.p == 0 {
+		if (i % app.p) == 0 {
 			app.collectService.Collect()
 		}
-		if i%app.r == 0 {
+		if (i % app.r) == 0 {
 			app.syncService.SyncMetrics()
 		}
 		time.Sleep(time.Second)
@@ -55,5 +55,5 @@ func NewApp(a string, r int64, p int64) *App {
 	syncClient := client.NewHTTPClient(a)
 	syncService := service.NewSyncService(metricsRepository, syncClient)
 
-	return &App{syncService: syncService, collectService: collectService}
+	return &App{syncService: syncService, collectService: collectService, r: r, p: p}
 }
