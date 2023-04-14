@@ -1,53 +1,86 @@
 package rest
 
 import (
-	"fmt"
 	"net/http"
 
+	"github.com/gin-gonic/gin"
 	"github.com/mrLandyrev/golang-metrics/internal/server/metrics/factory"
 	"github.com/mrLandyrev/golang-metrics/internal/server/metrics/models"
-	"github.com/mrLandyrev/golang-metrics/pkg/router"
 )
 
 type MetricsService interface {
+	GetAll() ([]models.Metric, error)
 	AddRecord(kind string, name string, value string) error
 	GetRecord(kind string, name string) (models.Metric, error)
 }
 
-func BuildUpdateMetricHandler(metricsService MetricsService) func(c *router.Context) {
-	return func(c *router.Context) {
-		err := metricsService.AddRecord(c.PathParams["kind"], c.PathParams["name"], c.PathParams["value"])
+func BuildUpdateMetricHandler(metricsService MetricsService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		err := metricsService.AddRecord(c.Param("kind"), c.Param("name"), c.Param("value"))
 
 		switch err {
 		case nil:
 			break
 		case factory.ErrUnknownMetricKind:
-			c.Response.WriteHeader(http.StatusNotImplemented)
+			c.Status(http.StatusNotImplemented)
 			return
 		case factory.ErrIncorrectMetricValue:
-			c.Response.WriteHeader(http.StatusBadRequest)
+			c.Status(http.StatusBadRequest)
 			return
 		default:
-			c.Response.WriteHeader(http.StatusInternalServerError)
+			c.Status(http.StatusInternalServerError)
 			return
 		}
 	}
 }
 
-func BuildGetMetricHandler(metricsService MetricsService) func(c *router.Context) {
-	return func(c *router.Context) {
-		item, err := metricsService.GetRecord(c.PathParams["kind"], c.PathParams["name"])
+func BuildGetMetricHandler(metricsService MetricsService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		item, err := metricsService.GetRecord(c.Param("kind"), c.Param("name"))
 
 		if err != nil {
-			c.Response.WriteHeader(http.StatusInternalServerError)
+			c.Status(http.StatusInternalServerError)
 			return
 		}
 
 		if item == nil {
-			c.Response.WriteHeader(http.StatusNotFound)
+			c.Status(http.StatusNotFound)
 			return
 		}
 
-		fmt.Fprint(c.Response, item.GetValue())
+		c.String(http.StatusOK, item.GetValue())
+	}
+}
+
+func BuildGetAllMetricHandler(MetricsService MetricsService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+
+		items, err := MetricsService.GetAll()
+
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+		}
+
+		metrics := []struct {
+			Name  string
+			Kind  string
+			Value string
+		}{}
+
+		for _, item := range items {
+			metrics = append(metrics, struct {
+				Name  string
+				Kind  string
+				Value string
+			}{
+				Name:  item.GetName(),
+				Kind:  item.GetKind(),
+				Value: item.GetValue(),
+			})
+		}
+
+		c.HTML(http.StatusOK, "list.html", gin.H{
+			"Metrics": metrics,
+		})
 	}
 }
