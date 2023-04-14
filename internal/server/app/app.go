@@ -25,7 +25,7 @@ func NewApp() *App {
 
 	router := gin.New()
 
-	router.LoadHTMLGlob("../../internal/server/app/transport/rest/templates/*.html")
+	router.LoadHTMLGlob("templates/*.html")
 
 	router.GET("/", rest.BuildGetAllMetricHandler(metricsService))
 	router.POST("/update/:kind/:name/:value", rest.BuildUpdateMetricHandler(metricsService))
