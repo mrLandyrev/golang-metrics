@@ -1,10 +1,4 @@
-package types
-
-import "errors"
-
-var (
-	ErrIncorrectMetricValue = errors.New("incorrect metric value")
-)
+package models
 
 type Metric interface {
 	GetName() string
