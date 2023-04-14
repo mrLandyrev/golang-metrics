@@ -55,5 +55,5 @@ func NewApp(a string, r int64, p int64) *App {
 	syncClient := client.NewHTTPClient(a)
 	syncService := service.NewSyncService(metricsRepository, syncClient)
 
-	return &App{syncService: syncService, collectService: collectService}
+	return &App{syncService: syncService, collectService: collectService, r: r, p: p}
 }
