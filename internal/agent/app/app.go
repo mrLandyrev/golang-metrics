@@ -32,12 +32,12 @@ type App struct {
 }
 
 func (app *App) Run() {
-	var i int64
-	for i = 1; ; i++ {
-		if (i % int64(app.collectInterval)) == 0 {
+	var i time.Duration
+	for i = time.Second; ; i += time.Second {
+		if (i % app.collectInterval) == 0 {
 			app.collectService.Collect()
 		}
-		if (i % int64(app.syncInterval)) == 0 {
+		if (i % app.syncInterval) == 0 {
 			app.syncService.SyncMetrics()
 		}
 		time.Sleep(time.Second)
