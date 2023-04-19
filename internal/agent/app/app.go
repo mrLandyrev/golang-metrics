@@ -12,7 +12,7 @@ import (
 )
 
 type Exporter interface {
-	Collect() ([]models.Metric, error)
+	GetMetrics() ([]models.Metric, error)
 }
 
 type CollectService interface {
@@ -25,26 +25,26 @@ type SyncService interface {
 }
 
 type App struct {
-	collectService CollectService
-	syncService    SyncService
-	r              int64
-	p              int64
+	collectService  CollectService
+	syncService     SyncService
+	syncInterval    time.Duration
+	collectInterval time.Duration
 }
 
 func (app *App) Run() {
 	var i int64
 	for i = 1; ; i++ {
-		if (i % app.p) == 0 {
+		if (i % int64(app.collectInterval)) == 0 {
 			app.collectService.Collect()
 		}
-		if (i % app.r) == 0 {
+		if (i % int64(app.syncInterval)) == 0 {
 			app.syncService.SyncMetrics()
 		}
 		time.Sleep(time.Second)
 	}
 }
 
-func NewApp(a string, r int64, p int64) *App {
+func NewApp(serverAddress string, syncInterval time.Duration, collectInterval time.Duration) *App {
 	metricsRepository := repository.NewMemoryMetricsRepository()
 
 	collectService := collectService.NewCollectService(metricsRepository)
@@ -52,8 +52,8 @@ func NewApp(a string, r int64, p int64) *App {
 	collectService.RegisterExporter(exporters.NewRandomExproter())
 	collectService.RegisterExporter(exporters.NewRuntimeExporter())
 
-	syncClient := client.NewHTTPClient(a)
+	syncClient := client.NewHTTPClient(serverAddress)
 	syncService := service.NewSyncService(metricsRepository, syncClient)
 
-	return &App{syncService: syncService, collectService: collectService, r: r, p: p}
+	return &App{syncService: syncService, collectService: collectService, syncInterval: syncInterval, collectInterval: collectInterval}
 }

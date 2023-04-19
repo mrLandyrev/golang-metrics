@@ -3,36 +3,36 @@ package main
 import (
 	"flag"
 	"os"
-	"strconv"
+	"time"
 
 	"github.com/mrLandyrev/golang-metrics/internal/agent/app"
 )
 
 func main() {
-	a := flag.String("a", "localhost:8080", "endpoint")
-	r := flag.Int64("r", 10, "report interval")
-	p := flag.Int64("p", 2, "poll interval")
+	serverAddress := flag.String("a", "localhost:8080", "metrics server address")
+	syncInteval := flag.Duration("r", time.Second*10, "time between sync metrics with server")
+	collectInterval := flag.Duration("p", time.Second*2, "time between run collect metrics")
 	flag.Parse()
 
 	if envA := os.Getenv("ADDRESS"); envA != "" {
-		a = &envA
+		serverAddress = &envA
 	}
 
 	if envR := os.Getenv("REPORT_INTERVAL"); envR != "" {
-		parsed, err := strconv.ParseInt(envR, 10, 64)
+		parsed, err := time.ParseDuration(envR)
 		if err != nil {
 			panic(err)
 		}
-		*r = parsed
+		*syncInteval = parsed
 	}
 
 	if envP := os.Getenv("POLL_INTERVAL"); envP != "" {
-		parsed, err := strconv.ParseInt(envP, 10, 64)
+		parsed, err := time.ParseDuration(envP)
 		if err != nil {
 			panic(err)
 		}
-		*p = parsed
+		*collectInterval = parsed
 	}
 
-	app.NewApp(*a, *r, *p).Run()
+	app.NewApp(*serverAddress, *syncInteval, *collectInterval).Run()
 }

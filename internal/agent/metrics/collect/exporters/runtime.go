@@ -44,7 +44,7 @@ func (exporter *RuntimeExproter) GetMetrics() ([]models.Metric, error) {
 	metricsMap["Sys"] = float64(exporter.rtm.Sys)
 	metricsMap["TotalAlloc"] = float64(exporter.rtm.TotalAlloc)
 
-	res := []models.Metric{}
+	res := make([]models.Metric, 0, len(metricsMap))
 
 	for key, value := range metricsMap {
 		metric := models.NewGaugeMetric(key)
