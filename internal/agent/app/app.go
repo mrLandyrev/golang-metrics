@@ -27,13 +27,13 @@ type SyncService interface {
 type App struct {
 	collectService  CollectService
 	syncService     SyncService
-	syncInterval    time.Duration
-	collectInterval time.Duration
+	syncInterval    int
+	collectInterval int
 }
 
 func (app *App) Run() {
-	var i time.Duration
-	for i = time.Second; ; i += time.Second {
+	var i int
+	for i = 1; ; i++ {
 		if (i % app.collectInterval) == 0 {
 			app.collectService.Collect()
 		}
@@ -44,7 +44,7 @@ func (app *App) Run() {
 	}
 }
 
-func NewApp(serverAddress string, syncInterval time.Duration, collectInterval time.Duration) *App {
+func NewApp(serverAddress string, syncInterval int, collectInterval int) *App {
 	metricsRepository := repository.NewMemoryMetricsRepository()
 
 	collectService := collectService.NewCollectService(metricsRepository)
