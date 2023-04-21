@@ -29,6 +29,7 @@ func (collectService *CollectService) RegisterExporter(exporter Exporter) error 
 }
 
 func (collectService *CollectService) Collect() error {
+	// get metrics from all registered exporters and store to repository
 	for _, exporter := range collectService.exporters {
 		metrics, err := exporter.GetMetrics()
 

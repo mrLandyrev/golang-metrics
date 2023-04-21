@@ -7,13 +7,18 @@ import (
 	"github.com/mrLandyrev/golang-metrics/internal/server/app"
 )
 
-func main() {
-	address := flag.String("a", "localhost:8080", "address")
+var config app.ServerConfig
+
+func buildConfig() {
+	flag.StringVar(&config.Address, "a", "localhost:8080", "metrics server address")
 	flag.Parse()
 
-	if envAddress := os.Getenv("ADDRESS"); envAddress != "" {
-		address = &envAddress
+	if envA := os.Getenv("ADDRESS"); envA != "" {
+		config.Address = envA
 	}
+}
 
-	app.NewApp(*address).Run()
+func main() {
+	buildConfig()
+	app.NewServerApp(config).Run()
 }
