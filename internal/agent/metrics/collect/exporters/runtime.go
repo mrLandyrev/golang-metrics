@@ -4,14 +4,14 @@ import (
 	"runtime"
 	"strconv"
 
-	"github.com/mrLandyrev/golang-metrics/internal/agent/metrics/models"
+	"github.com/mrLandyrev/golang-metrics/internal/metrics"
 )
 
 type RuntimeExproter struct {
 	rtm runtime.MemStats
 }
 
-func (exporter *RuntimeExproter) GetMetrics() ([]models.Metric, error) {
+func (exporter *RuntimeExproter) GetMetrics() ([]metrics.Metric, error) {
 	runtime.ReadMemStats(&exporter.rtm)
 
 	metricsMap := map[string]float64{}
@@ -44,10 +44,10 @@ func (exporter *RuntimeExproter) GetMetrics() ([]models.Metric, error) {
 	metricsMap["Sys"] = float64(exporter.rtm.Sys)
 	metricsMap["TotalAlloc"] = float64(exporter.rtm.TotalAlloc)
 
-	res := make([]models.Metric, 0, len(metricsMap))
+	res := make([]metrics.Metric, 0, len(metricsMap))
 
 	for key, value := range metricsMap {
-		metric := models.NewGaugeMetric(key)
+		metric := metrics.NewGaugeMetric(key)
 		metric.AddValue(strconv.FormatFloat(value, 'f', -1, 64))
 		res = append(res, metric)
 	}

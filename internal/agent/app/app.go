@@ -5,18 +5,12 @@ import (
 
 	"github.com/mrLandyrev/golang-metrics/internal/agent/metrics/collect/exporters"
 	collectService "github.com/mrLandyrev/golang-metrics/internal/agent/metrics/collect/service"
-	"github.com/mrLandyrev/golang-metrics/internal/agent/metrics/models"
-	"github.com/mrLandyrev/golang-metrics/internal/agent/metrics/repository"
 	"github.com/mrLandyrev/golang-metrics/internal/agent/metrics/sync/client"
 	"github.com/mrLandyrev/golang-metrics/internal/agent/metrics/sync/service"
+	"github.com/mrLandyrev/golang-metrics/internal/metrics"
 )
 
-type Exporter interface {
-	GetMetrics() ([]models.Metric, error)
-}
-
 type CollectService interface {
-	RegisterExporter(exporter collectService.Exporter) error
 	Collect() error
 }
 
@@ -32,8 +26,7 @@ type App struct {
 }
 
 func (app *App) Run() {
-	var i int
-	for i = 1; ; i++ {
+	for i := 1; ; i++ {
 		if (i % app.collectInterval) == 0 {
 			app.collectService.Collect()
 		}
@@ -45,7 +38,8 @@ func (app *App) Run() {
 }
 
 func NewApp(serverAddress string, syncInterval int, collectInterval int) *App {
-	metricsRepository := repository.NewMemoryMetricsRepository()
+	//build dependencies
+	metricsRepository := metrics.NewMemoryMetricsRepository()
 
 	collectService := collectService.NewCollectService(metricsRepository)
 	collectService.RegisterExporter(exporters.NewIncrementExproter())

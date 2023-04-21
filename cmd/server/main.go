@@ -8,12 +8,12 @@ import (
 )
 
 func main() {
-	a := flag.String("a", "localhost:8080", "address")
+	address := flag.String("a", "localhost:8080", "address")
 	flag.Parse()
 
 	if envAddress := os.Getenv("ADDRESS"); envAddress != "" {
-		a = &envAddress
+		address = &envAddress
 	}
 
-	app.NewApp(*a).Run()
+	app.NewApp(*address).Run()
 }

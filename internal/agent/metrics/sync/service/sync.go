@@ -1,15 +1,13 @@
 package service
 
-import (
-	"github.com/mrLandyrev/golang-metrics/internal/agent/metrics/models"
-)
+import "github.com/mrLandyrev/golang-metrics/internal/metrics"
 
 type Client interface {
-	SendMetric(metric models.Metric) error
+	SendMetric(metric metrics.Metric) error
 }
 
 type MetricsRepository interface {
-	GetAll() ([]models.Metric, error)
+	GetAll() ([]metrics.Metric, error)
 	Clear() error
 }
 
