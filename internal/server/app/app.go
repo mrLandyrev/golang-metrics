@@ -1,12 +1,14 @@
 package app
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mrLandyrev/golang-metrics/internal/metrics"
 	"github.com/mrLandyrev/golang-metrics/internal/server/app/transport/rest"
 	"github.com/mrLandyrev/golang-metrics/internal/server/metrics/service"
+	"go.uber.org/zap"
 )
 
 type ServerApp struct {
@@ -19,12 +21,18 @@ func (app *ServerApp) Run() {
 }
 
 func NewServerApp(config ServerConfig) *ServerApp {
+	logger, err := zap.NewDevelopment()
+	if err != nil {
+		log.Fatalln("Cannot create logger")
+	}
 	// build dependencies
 	metricsRepository := metrics.NewMemoryMetricsRepository()
 	metricsFactory := metrics.NewMetricsFactory()
 	metricsService := service.NewMetricsService(metricsRepository, metricsFactory)
 
 	router := gin.New()
+
+	router.Use(rest.BuildLoggingMiddleware(logger))
 
 	// register handlers
 	router.LoadHTMLGlob("templates/*.html")
