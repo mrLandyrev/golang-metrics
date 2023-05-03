@@ -26,7 +26,7 @@ type AgentApp struct {
 }
 
 func (app *AgentApp) Run() {
-	for i := 1; ; i++ {
+	for i := 0; ; i++ {
 		if (i % app.collectInterval) == 0 {
 			app.collectService.Collect()
 		}
