@@ -5,9 +5,9 @@ import (
 
 	"github.com/mrLandyrev/golang-metrics/internal/agent/metrics/collect/exporters"
 	collectService "github.com/mrLandyrev/golang-metrics/internal/agent/metrics/collect/service"
-	"github.com/mrLandyrev/golang-metrics/internal/agent/metrics/sync/client"
 	"github.com/mrLandyrev/golang-metrics/internal/agent/metrics/sync/service"
 	"github.com/mrLandyrev/golang-metrics/internal/metrics"
+	"github.com/mrLandyrev/golang-metrics/internal/server/app/transport/rest"
 )
 
 type CollectService interface {
@@ -46,7 +46,7 @@ func NewAgentApp(config Config) *AgentApp {
 	collectService.RegisterExporter(exporters.NewRandomExproter())
 	collectService.RegisterExporter(exporters.NewRuntimeExporter())
 
-	syncClient := client.NewHTTPClient(config.ServerAddress)
+	syncClient := rest.NewHTTPClient(config.ServerAddress)
 	syncService := service.NewSyncService(metricsRepository, syncClient)
 
 	return &AgentApp{syncService: syncService, collectService: collectService, syncInterval: config.SyncInteval, collectInterval: config.CollectInterval}

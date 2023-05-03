@@ -3,12 +3,12 @@ package metrics
 import "strconv"
 
 type GaugeMetric struct {
-	name  string
-	value float64
+	NameData  string
+	ValueData float64
 }
 
 func (gauge *GaugeMetric) Name() string {
-	return gauge.name
+	return gauge.NameData
 }
 
 func (gauge *GaugeMetric) Kind() string {
@@ -21,15 +21,15 @@ func (gauge *GaugeMetric) AddValue(value string) error {
 		return ErrIncorrectMetricValue
 	}
 
-	gauge.value = convertedValue
+	gauge.ValueData = convertedValue
 
 	return nil
 }
 
 func (gauge *GaugeMetric) Value() string {
-	return strconv.FormatFloat(gauge.value, 'f', -1, 64)
+	return strconv.FormatFloat(gauge.ValueData, 'f', -1, 64)
 }
 
 func NewGaugeMetric(name string) *GaugeMetric {
-	return &GaugeMetric{name: name, value: 0}
+	return &GaugeMetric{NameData: name, ValueData: 0}
 }

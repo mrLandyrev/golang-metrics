@@ -27,13 +27,13 @@ func (service *MetricsService) GetAll() ([]metrics.Metric, error) {
 	return service.metricsRepository.GetAll()
 }
 
-func (service *MetricsService) AddRecord(kind string, name string, value string) error {
+func (service *MetricsService) AddRecord(kind string, name string, value string) (metrics.Metric, error) {
 
 	// find item in storage
 	item, err := service.metricsRepository.GetByKindAndName(kind, name)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// create item if not found in storage
@@ -41,7 +41,7 @@ func (service *MetricsService) AddRecord(kind string, name string, value string)
 		item, err = service.metricsFactory.GetInstance(kind, name)
 
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 
@@ -49,11 +49,15 @@ func (service *MetricsService) AddRecord(kind string, name string, value string)
 	err = item.AddValue(value)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// save to storage
-	return service.metricsRepository.Persist(item)
+	if err = service.metricsRepository.Persist(item); err != nil {
+		return nil, err
+	}
+
+	return item, nil
 }
 
 func (service *MetricsService) GetRecord(kind string, name string) (metrics.Metric, error) {
