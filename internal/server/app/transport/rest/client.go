@@ -13,6 +13,9 @@ type HTTPClient struct {
 
 func (client *HTTPClient) SendMetric(metric metrics.Metric) error {
 	response, err := client.httpClient.Post("http://"+client.addr+"/update/"+metric.Kind()+"/"+metric.Name()+"/"+metric.Value(), "plain/text", nil)
+	if err != nil {
+		return err
+	}
 	response.Body.Close()
 
 	return err
