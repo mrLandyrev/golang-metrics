@@ -1,8 +1,6 @@
 package rest
 
 import (
-	"bytes"
-	"encoding/json"
 	"net/http"
 
 	"github.com/mrLandyrev/golang-metrics/internal/metrics"
@@ -14,12 +12,7 @@ type HTTPClient struct {
 }
 
 func (client *HTTPClient) SendMetric(metric metrics.Metric) error {
-	body, err := json.Marshal(From(metric))
-	if err != nil {
-		return err
-	}
-
-	response, err := client.httpClient.Post("http://"+client.addr+"/update", "application/json", bytes.NewReader(body))
+	response, err := client.httpClient.Post("http://"+client.addr+"/update/"+metric.Kind()+"/"+metric.Name()+"/"+metric.Value(), "plain/text", nil)
 	response.Body.Close()
 
 	return err
