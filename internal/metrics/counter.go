@@ -3,12 +3,12 @@ package metrics
 import "strconv"
 
 type CounterMetric struct {
-	name  string
-	value int64
+	NameData  string
+	ValueData int64
 }
 
 func (counter *CounterMetric) Name() string {
-	return counter.name
+	return counter.NameData
 }
 
 func (counter *CounterMetric) Kind() string {
@@ -21,15 +21,15 @@ func (counter *CounterMetric) AddValue(value string) error {
 		return ErrIncorrectMetricValue
 	}
 
-	counter.value += convertedValue
+	counter.ValueData += convertedValue
 
 	return nil
 }
 
 func (counter *CounterMetric) Value() string {
-	return strconv.FormatInt(counter.value, 10)
+	return strconv.FormatInt(counter.ValueData, 10)
 }
 
 func NewCounterMetric(name string) *CounterMetric {
-	return &CounterMetric{name: name, value: 0}
+	return &CounterMetric{NameData: name, ValueData: 0}
 }
