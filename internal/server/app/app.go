@@ -3,15 +3,15 @@ package app
 import (
 	"net/http"
 
+	"github.com/gin-gonic/gin"
 	"github.com/mrLandyrev/golang-metrics/internal/server/app/transport/rest"
 	"github.com/mrLandyrev/golang-metrics/internal/server/metrics/factory"
 	"github.com/mrLandyrev/golang-metrics/internal/server/metrics/repository"
 	"github.com/mrLandyrev/golang-metrics/internal/server/metrics/service"
-	"github.com/mrLandyrev/golang-metrics/pkg/router"
 )
 
 type App struct {
-	router *router.Router
+	router *gin.Engine
 }
 
 func (app *App) Run() {
@@ -23,10 +23,13 @@ func NewApp() *App {
 	metricsFactory := factory.NewMetricsFactory()
 	metricsService := service.NewMetricsService(metricsRepository, metricsFactory)
 
-	router := router.NewRouter()
+	router := gin.New()
 
-	router.Use("POST", "/update/:kind/:name/:value", rest.BuildUpdateMetricHandler(metricsService))
-	router.Use("GET", "/get/:kind/:name", rest.BuildGetMetricHandler(metricsService))
+	router.LoadHTMLGlob("templates/*.html")
+
+	router.GET("/", rest.BuildGetAllMetricHandler(metricsService))
+	router.POST("/update/:kind/:name/:value", rest.BuildUpdateMetricHandler(metricsService))
+	router.GET("/value/:kind/:name", rest.BuildGetMetricHandler(metricsService))
 
 	return &App{router: router}
 }

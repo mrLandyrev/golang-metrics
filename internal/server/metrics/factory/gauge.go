@@ -27,7 +27,7 @@ func (gauge *GaugeMetric) AddValue(value string) error {
 }
 
 func (gauge *GaugeMetric) GetValue() string {
-	return strconv.FormatFloat(gauge.value, 'E', -1, 64)
+	return strconv.FormatFloat(gauge.value, 'f', -1, 64)
 }
 
 func NewGaugeMetric(name string) *GaugeMetric {

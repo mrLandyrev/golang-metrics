@@ -31,6 +31,10 @@ func (storage *MemoryMetricsRepository) Persist(item models.Metric) error {
 	return nil
 }
 
+func (storage *MemoryMetricsRepository) GetAll() ([]models.Metric, error) {
+	return storage.data, nil
+}
+
 func NewMemoryMetricsRepository() *MemoryMetricsRepository {
 	return &MemoryMetricsRepository{}
 }

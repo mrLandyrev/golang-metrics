@@ -9,6 +9,7 @@ type MetricsFactory interface {
 }
 
 type MetricsRepository interface {
+	GetAll() ([]models.Metric, error)
 	GetByKindAndName(kind string, name string) (models.Metric, error)
 	Persist(metric models.Metric) error
 }
@@ -16,6 +17,10 @@ type MetricsRepository interface {
 type MetricsService struct {
 	metricsRepository MetricsRepository
 	metricsFactory    MetricsFactory
+}
+
+func (service *MetricsService) GetAll() ([]models.Metric, error) {
+	return service.metricsRepository.GetAll()
 }
 
 func (service *MetricsService) AddRecord(kind string, name string, value string) error {
