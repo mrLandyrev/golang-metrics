@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/mrLandyrev/golang-metrics/internal/agent/metrics/collect/exporters"
@@ -29,14 +28,10 @@ type AgentApp struct {
 func (app *AgentApp) Run() {
 	for i := 1; ; i++ {
 		if (i % app.collectInterval) == 0 {
-			err := app.collectService.Collect()
-			if err != nil {
-				fmt.Println(err)
-			}
+			_ = app.collectService.Collect()
 		}
 		if (i % app.syncInterval) == 0 {
-			err := app.syncService.SyncMetrics()
-			fmt.Println(err)
+			_ = app.syncService.SyncMetrics()
 		}
 		time.Sleep(time.Second)
 	}
