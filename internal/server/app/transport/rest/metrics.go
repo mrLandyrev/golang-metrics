@@ -4,15 +4,18 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mrLandyrev/golang-metrics/internal/server/metrics/factory"
-	"github.com/mrLandyrev/golang-metrics/internal/server/metrics/models"
+	"github.com/mrLandyrev/golang-metrics/internal/metrics"
 )
 
+// -- dependencies --
+
 type MetricsService interface {
-	GetAll() ([]models.Metric, error)
+	GetAll() ([]metrics.Metric, error)
 	AddRecord(kind string, name string, value string) error
-	GetRecord(kind string, name string) (models.Metric, error)
+	GetRecord(kind string, name string) (metrics.Metric, error)
 }
+
+// -- dependencies --
 
 func BuildUpdateMetricHandler(metricsService MetricsService) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -21,10 +24,10 @@ func BuildUpdateMetricHandler(metricsService MetricsService) gin.HandlerFunc {
 		switch err {
 		case nil:
 			break
-		case factory.ErrUnknownMetricKind:
+		case metrics.ErrUnknownMetricKind:
 			c.Status(http.StatusNotImplemented)
 			return
-		case factory.ErrIncorrectMetricValue:
+		case metrics.ErrIncorrectMetricValue:
 			c.Status(http.StatusBadRequest)
 			return
 		default:
@@ -48,7 +51,7 @@ func BuildGetMetricHandler(metricsService MetricsService) gin.HandlerFunc {
 			return
 		}
 
-		c.String(http.StatusOK, item.GetValue())
+		c.String(http.StatusOK, item.Value())
 	}
 }
 
@@ -61,11 +64,11 @@ func BuildGetAllMetricHandler(MetricsService MetricsService) gin.HandlerFunc {
 			c.Status(http.StatusInternalServerError)
 		}
 
-		metrics := []struct {
+		metrics := make([]struct {
 			Name  string
 			Kind  string
 			Value string
-		}{}
+		}, 0, len(items))
 
 		for _, item := range items {
 			metrics = append(metrics, struct {
@@ -73,9 +76,9 @@ func BuildGetAllMetricHandler(MetricsService MetricsService) gin.HandlerFunc {
 				Kind  string
 				Value string
 			}{
-				Name:  item.GetName(),
-				Kind:  item.GetKind(),
-				Value: item.GetValue(),
+				Name:  item.Name(),
+				Kind:  item.Kind(),
+				Value: item.Value(),
 			})
 		}
 

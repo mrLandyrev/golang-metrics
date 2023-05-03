@@ -1,17 +1,21 @@
 package service
 
 import (
-	"github.com/mrLandyrev/golang-metrics/internal/agent/metrics/models"
+	"github.com/mrLandyrev/golang-metrics/internal/metrics"
 )
 
+// -- dependencies --
+
 type Exporter interface {
-	GetMetrics() ([]models.Metric, error)
+	GetMetrics() ([]metrics.Metric, error)
 }
 
 type MetricsRepository interface {
-	GetByKindAndName(kind string, name string) (models.Metric, error)
-	Persist(item models.Metric) error
+	GetByKindAndName(kind string, name string) (metrics.Metric, error)
+	Persist(item metrics.Metric) error
 }
+
+// -- dependencies --
 
 type CollectService struct {
 	exporters         []Exporter
@@ -20,10 +24,12 @@ type CollectService struct {
 
 func (collectService *CollectService) RegisterExporter(exporter Exporter) error {
 	collectService.exporters = append(collectService.exporters, exporter)
+
 	return nil
 }
 
 func (collectService *CollectService) Collect() error {
+	// get metrics from all registered exporters and store to repository
 	for _, exporter := range collectService.exporters {
 		metrics, err := exporter.GetMetrics()
 
@@ -32,7 +38,7 @@ func (collectService *CollectService) Collect() error {
 		}
 
 		for _, metric := range metrics {
-			record, err := collectService.metricsRepository.GetByKindAndName(metric.GetKind(), metric.GetName())
+			record, err := collectService.metricsRepository.GetByKindAndName(metric.Kind(), metric.Name())
 
 			if err != nil {
 				return err
@@ -46,7 +52,7 @@ func (collectService *CollectService) Collect() error {
 				continue
 			}
 
-			err = record.AddValue(metric.GetValue())
+			err = record.AddValue(metric.Value())
 
 			if err != nil {
 				return err

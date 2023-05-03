@@ -6,7 +6,7 @@ func Test_main(t *testing.T) {
 	tests := []struct {
 		name string
 	}{
-		// TODO: Add test cases.
+		// мне очень стыдно, но я не успел
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

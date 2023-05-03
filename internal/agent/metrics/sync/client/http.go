@@ -3,7 +3,7 @@ package client
 import (
 	"net/http"
 
-	"github.com/mrLandyrev/golang-metrics/internal/agent/metrics/models"
+	"github.com/mrLandyrev/golang-metrics/internal/metrics"
 )
 
 type HTTPClient struct {
@@ -11,8 +11,8 @@ type HTTPClient struct {
 	addr       string
 }
 
-func (client *HTTPClient) SendMetric(metric models.Metric) error {
-	response, err := client.httpClient.Post("http://"+client.addr+"/update/"+metric.GetKind()+"/"+metric.GetName()+"/"+metric.GetValue(), "text/plain-text", nil)
+func (client *HTTPClient) SendMetric(metric metrics.Metric) error {
+	response, err := client.httpClient.Post("http://"+client.addr+"/update/"+metric.Kind()+"/"+metric.Name()+"/"+metric.Value(), "text/plain-text", nil)
 	response.Body.Close()
 
 	return err
