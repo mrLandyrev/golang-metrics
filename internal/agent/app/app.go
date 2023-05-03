@@ -27,19 +27,24 @@ type SyncService interface {
 type App struct {
 	collectService CollectService
 	syncService    SyncService
+	r              int64
+	p              int64
 }
 
 func (app *App) Run() {
-	for i := 1; ; i++ {
-		app.collectService.Collect()
-		if i%5 == 0 {
+	var i int64
+	for i = 1; ; i++ {
+		if i%app.p == 0 {
+			app.collectService.Collect()
+		}
+		if i%app.r == 0 {
 			app.syncService.SyncMetrics()
 		}
-		time.Sleep(time.Second * 2)
+		time.Sleep(time.Second)
 	}
 }
 
-func NewApp() *App {
+func NewApp(a string, r int64, p int64) *App {
 	metricsRepository := repository.NewMemoryMetricsRepository()
 
 	collectService := collectService.NewCollectService(metricsRepository)
@@ -47,8 +52,8 @@ func NewApp() *App {
 	collectService.RegisterExporter(exporters.NewRandomExproter())
 	collectService.RegisterExporter(exporters.NewRuntimeExporter())
 
-	syncClient := client.NewHTTPClient()
+	syncClient := client.NewHTTPClient(a)
 	syncService := service.NewSyncService(metricsRepository, syncClient)
 
-	return &App{syncService: syncService, collectService: collectService}
+	return &App{syncService: syncService, collectService: collectService, r: r, p: p}
 }

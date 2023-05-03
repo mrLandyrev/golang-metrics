@@ -12,13 +12,14 @@ import (
 
 type App struct {
 	router *gin.Engine
+	a      string
 }
 
 func (app *App) Run() {
-	http.ListenAndServe(":8080", app.router)
+	http.ListenAndServe(app.a, app.router)
 }
 
-func NewApp() *App {
+func NewApp(a string) *App {
 	metricsRepository := repository.NewMemoryMetricsRepository()
 	metricsFactory := factory.NewMetricsFactory()
 	metricsService := service.NewMetricsService(metricsRepository, metricsFactory)
@@ -31,5 +32,5 @@ func NewApp() *App {
 	router.POST("/update/:kind/:name/:value", rest.BuildUpdateMetricHandler(metricsService))
 	router.GET("/value/:kind/:name", rest.BuildGetMetricHandler(metricsService))
 
-	return &App{router: router}
+	return &App{router: router, a: a}
 }
