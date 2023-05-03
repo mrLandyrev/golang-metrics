@@ -14,7 +14,7 @@ type HTTPClient struct {
 }
 
 func (client *HTTPClient) SendMetric(metric metrics.Metric) error {
-	body, err := json.Marshal(metric)
+	body, err := json.Marshal(From(metric))
 	if err != nil {
 		return err
 	}
