@@ -19,7 +19,7 @@ func (client *HTTPClient) SendMetric(metric metrics.Metric) error {
 		return err
 	}
 
-	response, err := client.httpClient.Post("http://"+client.addr+"/update/", "application/json", bytes.NewReader(body))
+	response, err := client.httpClient.Post("http://"+client.addr+"/update", "application/json", bytes.NewReader(body))
 	response.Body.Close()
 
 	return err
