@@ -32,7 +32,8 @@ func NewServerApp(config ServerConfig) *ServerApp {
 
 	router := gin.New()
 
-	router.Use(rest.BuildLoggingMiddleware(logger))
+	router.Use(rest.LoggingMiddleware(logger))
+	router.Use(rest.GzipMiddleware())
 
 	// register handlers
 	router.LoadHTMLGlob("templates/*.html")

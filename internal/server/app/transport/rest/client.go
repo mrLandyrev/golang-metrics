@@ -2,6 +2,7 @@ package rest
 
 import (
 	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"net/http"
 
@@ -14,11 +15,20 @@ type HTTPClient struct {
 }
 
 func (client *HTTPClient) SendMetric(metric metrics.Metric) error {
-	body, err := json.Marshal(From(metric))
+	var body bytes.Buffer
+	jBody, err := json.Marshal(From(metric))
 	if err != nil {
 		return err
 	}
-	response, err := client.httpClient.Post("http://"+client.addr+"/update/", "application/json", bytes.NewReader(body))
+	gzipWriter := gzip.NewWriter(&body)
+	gzipWriter.Write(jBody)
+	gzipWriter.Flush()
+	req, err := http.NewRequest(http.MethodPost, "http://"+client.addr+"/update/", &body)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Encoding", "gzip")
+	response, err := client.httpClient.Do(req)
 	if err != nil {
 		return err
 	}
