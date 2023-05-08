@@ -25,8 +25,14 @@ func NewServerApp(config ServerConfig) *ServerApp {
 	if err != nil {
 		log.Fatalln("Cannot create logger")
 	}
+
+	var metricsRepository service.MetricsRepository
 	// build dependencies
-	metricsRepository := metrics.NewMemoryMetricsRepository()
+	if config.FileStoragePath == "" {
+		metricsRepository = metrics.NewMemoryMetricsRepository()
+	} else {
+		metricsRepository, _ = metrics.NewFileMetricsRepository(config.FileStoragePath, config.StoreInterval, config.NeedRestore)
+	}
 	metricsFactory := metrics.NewMetricsFactory()
 	metricsService := service.NewMetricsService(metricsRepository, metricsFactory)
 
