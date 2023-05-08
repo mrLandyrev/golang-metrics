@@ -63,7 +63,7 @@ func GzipMiddleware() gin.HandlerFunc {
 			}()
 		}
 
-		if c.Request.Header.Get("Content-Encoding") == "gzip" || true {
+		if c.Request.Header.Get("Content-Encoding") == "gzip" {
 			gz, _ := gzip.NewReader(c.Request.Body)
 			c.Request.Header.Del("Content-Encoding")
 			c.Request.Header.Del("Content-Length")
