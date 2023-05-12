@@ -16,7 +16,7 @@ func buildConfig() {
 	var storeInterval int
 	flag.StringVar(&config.Address, "a", "localhost:8080", "metrics server address")
 	flag.IntVar(&storeInterval, "i", 300, "time between store metrics to file")
-	flag.StringVar(&config.FileStoragePath, "f", "", "path to file where storage metrics")
+	flag.StringVar(&config.FileStoragePath, "f", "/tmp/metrics-db.json", "path to file where storage metrics")
 	flag.BoolVar(&config.NeedRestore, "r", true, "need restore data on startup")
 	flag.Parse()
 
