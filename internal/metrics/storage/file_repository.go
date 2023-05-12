@@ -124,7 +124,7 @@ func NewFileMetricsRepository(filename string, storeInterval time.Duration, Need
 			}
 		}()
 
-		var gracefulStop = make(chan os.Signal)
+		var gracefulStop = make(chan os.Signal, 1)
 		signal.Notify(gracefulStop, syscall.SIGTERM)
 		signal.Notify(gracefulStop, syscall.SIGINT)
 		go func() {
