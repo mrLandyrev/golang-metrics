@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/mrLandyrev/golang-metrics/internal/metrics"
+	"github.com/mrLandyrev/golang-metrics/internal/metrics/storage"
 	"github.com/mrLandyrev/golang-metrics/internal/server/app/transport/rest"
 	"github.com/mrLandyrev/golang-metrics/internal/server/metrics/service"
 	"go.uber.org/zap"
@@ -29,9 +30,9 @@ func NewServerApp(config ServerConfig) *ServerApp {
 	var metricsRepository service.MetricsRepository
 	// build dependencies
 	if config.FileStoragePath == "" {
-		metricsRepository = metrics.NewMemoryMetricsRepository()
+		metricsRepository = storage.NewMemoryMetricsRepository()
 	} else {
-		metricsRepository, _ = metrics.NewFileMetricsRepository(config.FileStoragePath, config.StoreInterval, config.NeedRestore)
+		metricsRepository, _ = storage.NewFileMetricsRepository(config.FileStoragePath, config.StoreInterval, config.NeedRestore)
 	}
 	metricsFactory := metrics.NewMetricsFactory()
 	metricsService := service.NewMetricsService(metricsRepository, metricsFactory)
