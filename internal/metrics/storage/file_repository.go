@@ -1,4 +1,4 @@
-package metrics
+package storage
 
 import (
 	"bufio"
@@ -8,6 +8,8 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/mrLandyrev/golang-metrics/internal/metrics"
 )
 
 type StorageRecord struct {
@@ -18,10 +20,9 @@ type StorageRecord struct {
 
 type FileMetricsRepository struct {
 	MemoryMetricsRepository
-	filename   string
-	factory    MetricsFactory
-	hasChanges bool
-	isSync     bool
+	filename string
+	factory  metrics.MetricsFactory
+	isSync   bool
 }
 
 func (storage *FileMetricsRepository) Flush() error {
@@ -88,7 +89,7 @@ func (storage *FileMetricsRepository) Restore() error {
 	return nil
 }
 
-func (storage *FileMetricsRepository) Persist(item Metric) error {
+func (storage *FileMetricsRepository) Persist(item metrics.Metric) error {
 	err := storage.MemoryMetricsRepository.Persist(item)
 
 	if err != nil {
@@ -106,9 +107,10 @@ func NewFileMetricsRepository(filename string, storeInterval time.Duration, Need
 	repo := &FileMetricsRepository{
 		MemoryMetricsRepository: *NewMemoryMetricsRepository(),
 		filename:                filename,
-		hasChanges:              false,
 		isSync:                  storeInterval == 0,
 	}
+
+	fmt.Println(storeInterval)
 
 	if NeedRestore {
 		repo.Restore()
@@ -117,9 +119,7 @@ func NewFileMetricsRepository(filename string, storeInterval time.Duration, Need
 	if !repo.isSync {
 		go func() {
 			for {
-				if repo.hasChanges {
-					repo.Flush()
-				}
+				repo.Flush()
 				time.Sleep(storeInterval)
 			}
 		}()
@@ -129,9 +129,7 @@ func NewFileMetricsRepository(filename string, storeInterval time.Duration, Need
 		signal.Notify(gracefulStop, syscall.SIGINT)
 		go func() {
 			<-gracefulStop
-			if repo.hasChanges {
-				repo.Flush()
-			}
+			repo.Flush()
 			os.Exit(0)
 		}()
 	}
