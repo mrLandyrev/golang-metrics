@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -120,6 +122,17 @@ func NewFileMetricsRepository(filename string, storeInterval time.Duration, Need
 				}
 				time.Sleep(storeInterval)
 			}
+		}()
+
+		var gracefulStop = make(chan os.Signal)
+		signal.Notify(gracefulStop, syscall.SIGTERM)
+		signal.Notify(gracefulStop, syscall.SIGINT)
+		go func() {
+			<-gracefulStop
+			if repo.hasChanges {
+				repo.Flush()
+			}
+			os.Exit(0)
 		}()
 	}
 
