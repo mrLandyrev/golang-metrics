@@ -6,7 +6,7 @@ import (
 	"github.com/mrLandyrev/golang-metrics/internal/agent/metrics/collect/exporters"
 	collectService "github.com/mrLandyrev/golang-metrics/internal/agent/metrics/collect/service"
 	"github.com/mrLandyrev/golang-metrics/internal/agent/metrics/sync/service"
-	"github.com/mrLandyrev/golang-metrics/internal/metrics"
+	"github.com/mrLandyrev/golang-metrics/internal/metrics/storage"
 	"github.com/mrLandyrev/golang-metrics/internal/server/app/transport/rest"
 )
 
@@ -28,10 +28,10 @@ type AgentApp struct {
 func (app *AgentApp) Run() {
 	for i := 1; ; i++ {
 		if (i % app.collectInterval) == 0 {
-			app.collectService.Collect()
+			_ = app.collectService.Collect()
 		}
 		if (i % app.syncInterval) == 0 {
-			app.syncService.SyncMetrics()
+			_ = app.syncService.SyncMetrics()
 		}
 		time.Sleep(time.Second)
 	}
@@ -39,7 +39,7 @@ func (app *AgentApp) Run() {
 
 func NewAgentApp(config Config) *AgentApp {
 	//build dependencies
-	metricsRepository := metrics.NewMemoryMetricsRepository()
+	metricsRepository := storage.NewMemoryMetricsRepository()
 
 	collectService := collectService.NewCollectService(metricsRepository)
 	collectService.RegisterExporter(exporters.NewIncrementExproter())

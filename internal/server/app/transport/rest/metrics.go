@@ -97,7 +97,7 @@ func BuildJSONGetMetricHandler(metricsService MetricsService) gin.HandlerFunc {
 			return
 		}
 
-		c.String(http.StatusOK, item.Value())
+		c.JSON(http.StatusOK, From(item))
 	}
 }
 

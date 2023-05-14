@@ -1,5 +1,10 @@
 package app
 
+import "time"
+
 type ServerConfig struct {
-	Address string
+	Address         string
+	StoreInterval   time.Duration
+	FileStoragePath string
+	NeedRestore     bool
 }

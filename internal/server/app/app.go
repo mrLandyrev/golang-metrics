@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/mrLandyrev/golang-metrics/internal/metrics"
+	"github.com/mrLandyrev/golang-metrics/internal/metrics/storage"
 	"github.com/mrLandyrev/golang-metrics/internal/server/app/transport/rest"
 	"github.com/mrLandyrev/golang-metrics/internal/server/metrics/service"
 	"go.uber.org/zap"
@@ -25,20 +26,28 @@ func NewServerApp(config ServerConfig) *ServerApp {
 	if err != nil {
 		log.Fatalln("Cannot create logger")
 	}
+
+	var metricsRepository service.MetricsRepository
 	// build dependencies
-	metricsRepository := metrics.NewMemoryMetricsRepository()
+	if config.FileStoragePath == "" {
+		metricsRepository = storage.NewMemoryMetricsRepository()
+	} else {
+		metricsRepository, _ = storage.NewFileMetricsRepository(config.FileStoragePath, config.StoreInterval, config.NeedRestore)
+	}
 	metricsFactory := metrics.NewMetricsFactory()
 	metricsService := service.NewMetricsService(metricsRepository, metricsFactory)
 
 	router := gin.New()
 
-	router.Use(rest.BuildLoggingMiddleware(logger))
+	router.Use(rest.LoggingMiddleware(logger))
+	router.Use(rest.GzipMiddleware())
 
 	// register handlers
 	router.LoadHTMLGlob("templates/*.html")
 	router.GET("/", rest.BuildGetAllMetricHandler(metricsService))
 	router.POST("/update/:kind/:name/:value", rest.BuildUpdateMetricHandler(metricsService))
 	router.POST("/update", rest.BuildJSONUpdateMetricHandler(metricsService))
+	router.POST("/value", rest.BuildJSONGetMetricHandler(metricsService))
 	router.GET("/value/:kind/:name", rest.BuildGetMetricHandler(metricsService))
 
 	return &ServerApp{router: router, address: config.Address}
