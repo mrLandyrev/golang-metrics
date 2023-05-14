@@ -39,7 +39,6 @@ func NewServerApp(config ServerConfig) *ServerApp {
 	router.GET("/", rest.BuildGetAllMetricHandler(metricsService))
 	router.POST("/update/:kind/:name/:value", rest.BuildUpdateMetricHandler(metricsService))
 	router.POST("/update", rest.BuildJSONUpdateMetricHandler(metricsService))
-	router.POST("/update", rest.BuildJSONUpdateMetricHandler(metricsService))
 	router.POST("/value", rest.BuildJSONGetMetricHandler(metricsService))
 	router.GET("/value/:kind/:name", rest.BuildGetMetricHandler(metricsService))
 
