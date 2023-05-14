@@ -1,4 +1,4 @@
-package client
+package rest
 
 import (
 	"net/http"
@@ -12,7 +12,7 @@ type HTTPClient struct {
 }
 
 func (client *HTTPClient) SendMetric(metric metrics.Metric) error {
-	response, err := client.httpClient.Post("http://"+client.addr+"/update/"+metric.Kind()+"/"+metric.Name()+"/"+metric.Value(), "text/plain-text", nil)
+	response, err := client.httpClient.Post("http://"+client.addr+"/update/"+metric.Kind()+"/"+metric.Name()+"/"+metric.Value(), "application/json", nil)
 	response.Body.Close()
 
 	return err

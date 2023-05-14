@@ -2,6 +2,7 @@ package rest
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mrLandyrev/golang-metrics/internal/metrics"
@@ -11,7 +12,7 @@ import (
 
 type MetricsService interface {
 	GetAll() ([]metrics.Metric, error)
-	AddRecord(kind string, name string, value string) error
+	AddRecord(kind string, name string, value string) (metrics.Metric, error)
 	GetRecord(kind string, name string) (metrics.Metric, error)
 }
 
@@ -19,7 +20,7 @@ type MetricsService interface {
 
 func BuildUpdateMetricHandler(metricsService MetricsService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		err := metricsService.AddRecord(c.Param("kind"), c.Param("name"), c.Param("value"))
+		_, err := metricsService.AddRecord(c.Param("kind"), c.Param("name"), c.Param("value"))
 
 		switch err {
 		case nil:
@@ -34,6 +35,69 @@ func BuildUpdateMetricHandler(metricsService MetricsService) gin.HandlerFunc {
 			c.Status(http.StatusInternalServerError)
 			return
 		}
+	}
+}
+
+func BuildJSONUpdateMetricHandler(metricsService MetricsService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var m Metric
+		err := c.BindJSON(&m)
+		if err != nil {
+			c.Status(http.StatusBadRequest)
+			return
+		}
+
+		var recordValue string
+		switch m.MType {
+		case "gauge":
+			recordValue = strconv.FormatFloat(*m.Value, 'f', -1, 64)
+		case "counter":
+			recordValue = strconv.FormatInt(*m.Delta, 10)
+		default:
+			c.Status(http.StatusNotImplemented)
+			return
+		}
+
+		metricValue, err := metricsService.AddRecord(m.MType, m.ID, recordValue)
+
+		switch err {
+		case nil:
+			c.JSON(http.StatusOK, From(metricValue))
+			return
+		case metrics.ErrUnknownMetricKind:
+			c.Status(http.StatusNotImplemented)
+			return
+		case metrics.ErrIncorrectMetricValue:
+			c.Status(http.StatusBadRequest)
+			return
+		default:
+			c.Status(http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+func BuildJSONGetMetricHandler(metricsService MetricsService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var m Metric
+		err := c.BindJSON(&m)
+		if err != nil {
+			c.Status(http.StatusBadRequest)
+			return
+		}
+		item, err := metricsService.GetRecord(m.MType, m.ID)
+
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return
+		}
+
+		if item == nil {
+			c.Status(http.StatusNotFound)
+			return
+		}
+
+		c.String(http.StatusOK, item.Value())
 	}
 }
 
