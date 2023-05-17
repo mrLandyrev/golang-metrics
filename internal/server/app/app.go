@@ -29,22 +29,25 @@ func NewServerApp(config ServerConfig) *ServerApp {
 	logger, err := zap.NewDevelopment()
 	if err != nil {
 		log.Fatalln("Cannot create logger")
+		os.Exit(0)
+	}
+
+	db, err := sql.Open("pgx", config.DatabaseConnection)
+	if err != nil {
+		logger.Fatal("Cannot connect database")
 	}
 
 	var metricsRepository service.MetricsRepository
 	// build dependencies
-	if config.FileStoragePath == "" {
-		metricsRepository = storage.NewMemoryMetricsRepository()
-	} else {
+	if config.DatabaseConnection != "" {
+		metricsRepository, _ = storage.NewDatabaseMetricsRepository(db)
+	} else if config.FileStoragePath != "" {
 		metricsRepository, _ = storage.NewFileMetricsRepository(config.FileStoragePath, config.StoreInterval, config.NeedRestore)
+	} else {
+		metricsRepository = storage.NewMemoryMetricsRepository()
 	}
 	metricsFactory := metrics.NewMetricsFactory()
 	metricsService := service.NewMetricsService(metricsRepository, metricsFactory)
-
-	db, err := sql.Open("pgx", config.DatabaseConnection)
-	if err != nil {
-		os.Exit(0)
-	}
 
 	router := gin.New()
 
