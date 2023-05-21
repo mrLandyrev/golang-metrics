@@ -37,6 +37,34 @@ func (client *HTTPClient) SendMetric(metric metrics.Metric) error {
 	return err
 }
 
+func (client *HTTPClient) SendMetrics(metrics []metrics.Metric) error {
+	var bodyData []Metric
+	for _, metric := range metrics {
+		bodyData = append(bodyData, From(metric))
+	}
+	jBody, err := json.Marshal(bodyData)
+	if err != nil {
+		return err
+	}
+
+	var body bytes.Buffer
+	gzipWriter := gzip.NewWriter(&body)
+	gzipWriter.Write(jBody)
+	gzipWriter.Flush()
+	req, err := http.NewRequest(http.MethodPost, "http://"+client.addr+"/updates/", &body)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Encoding", "gzip")
+	response, err := client.httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+	response.Body.Close()
+
+	return err
+}
+
 func NewHTTPClient(addr string) *HTTPClient {
 	return &HTTPClient{httpClient: http.Client{}, addr: addr}
 }

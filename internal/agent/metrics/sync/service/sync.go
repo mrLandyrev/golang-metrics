@@ -4,6 +4,7 @@ import "github.com/mrLandyrev/golang-metrics/internal/metrics"
 
 type Client interface {
 	SendMetric(metric metrics.Metric) error
+	SendMetrics(metrics []metrics.Metric) error
 }
 
 type MetricsRepository interface {
@@ -23,12 +24,10 @@ func (syncService *SyncService) SyncMetrics() error {
 		return err
 	}
 
-	for _, metric := range metrics {
-		err = syncService.syncClient.SendMetric(metric)
+	err = syncService.syncClient.SendMetrics(metrics)
 
-		if err != nil {
-			return err
-		}
+	if err != nil {
+		return err
 	}
 
 	return syncService.metricsRepository.Clear()

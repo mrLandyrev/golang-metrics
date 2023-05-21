@@ -60,6 +60,7 @@ func NewServerApp(config ServerConfig) *ServerApp {
 	router.POST("/update/:kind/:name/:value", rest.BuildUpdateMetricHandler(metricsService))
 	router.POST("/update", rest.BuildJSONUpdateMetricHandler(metricsService))
 	router.POST("/value", rest.BuildJSONGetMetricHandler(metricsService))
+	router.POST("/updates", rest.BuildJSONBatchUpdateMetricsHandler(metricsService))
 	router.GET("/value/:kind/:name", rest.BuildGetMetricHandler(metricsService))
 	router.GET("/ping", rest.BuildPingHandler(db))
 
