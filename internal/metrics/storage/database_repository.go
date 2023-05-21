@@ -20,6 +20,11 @@ func (storage *DatabaseMetricsRepository) GetAll() ([]metrics.Metric, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
+
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
 
 	data := make([]metrics.Metric, 0)
 	var name string
@@ -63,6 +68,10 @@ func (storage *DatabaseMetricsRepository) GetByKindAndName(kind string, name str
 		return nil, err
 	}
 	defer rows.Close()
+
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
 
 	if !rows.Next() {
 		return nil, nil
