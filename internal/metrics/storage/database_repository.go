@@ -23,16 +23,20 @@ func (storage *DatabaseMetricsRepository) GetAll() ([]metrics.Metric, error) {
 			FROM metrics
 		`)
 
-		return err
+		if err != nil {
+			return err
+		}
+
+		if rows.Err() != nil {
+			return rows.Err()
+		}
+
+		return nil
 	}, 4, nil)
+	defer rows.Close()
 
 	if err != nil {
 		return nil, err
-	}
-	defer rows.Close()
-
-	if rows.Err() != nil {
-		return nil, rows.Err()
 	}
 
 	data := make([]metrics.Metric, 0)
@@ -77,13 +81,21 @@ func (storage *DatabaseMetricsRepository) GetByKindAndName(kind string, name str
 			kind,
 		)
 
-		return err
+		if err != nil {
+			return err
+		}
+
+		if rows.Err() != nil {
+			return rows.Err()
+		}
+
+		return nil
 	}, 4, nil)
+	defer rows.Close()
 
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
 
 	if rows.Err() != nil {
 		return nil, rows.Err()
