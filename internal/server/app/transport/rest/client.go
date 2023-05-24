@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	retry "github.com/mrLandyrev/golang-metrics/internal"
 	"github.com/mrLandyrev/golang-metrics/internal/metrics"
 )
 
@@ -56,7 +57,13 @@ func (client *HTTPClient) SendMetrics(metrics []metrics.Metric) error {
 		return err
 	}
 	req.Header.Set("Content-Encoding", "gzip")
-	response, err := client.httpClient.Do(req)
+	var response *http.Response
+	err = retry.HandleFunc(func() error {
+		var err error
+		response, err = client.httpClient.Do(req)
+
+		return err
+	}, 4, nil)
 	if err != nil {
 		return err
 	}

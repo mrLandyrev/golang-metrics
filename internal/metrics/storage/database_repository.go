@@ -3,6 +3,7 @@ package storage
 import (
 	"database/sql"
 
+	retry "github.com/mrLandyrev/golang-metrics/internal"
 	"github.com/mrLandyrev/golang-metrics/internal/metrics"
 )
 
@@ -12,10 +13,18 @@ type DatabaseMetricsRepository struct {
 }
 
 func (storage *DatabaseMetricsRepository) GetAll() ([]metrics.Metric, error) {
-	rows, err := storage.db.Query(`
-		SELECT name, kind, value
-		FROM metrics
-	`)
+	var rows *sql.Rows
+
+	err := retry.HandleFunc(func() error {
+		var err error
+
+		rows, err = storage.db.Query(`
+			SELECT name, kind, value
+			FROM metrics
+		`)
+
+		return err
+	}, 4, nil)
 
 	if err != nil {
 		return nil, err
@@ -53,16 +62,23 @@ func (storage *DatabaseMetricsRepository) GetAll() ([]metrics.Metric, error) {
 }
 
 func (storage *DatabaseMetricsRepository) GetByKindAndName(kind string, name string) (metrics.Metric, error) {
-	rows, err := storage.db.Query(`
-		SELECT value
-		FROM metrics
-		WHERE name = $1
-		AND kind = $2
-		LIMIT 1
-	`,
-		name,
-		kind,
-	)
+	var rows *sql.Rows
+
+	err := retry.HandleFunc(func() error {
+		var err error
+		rows, err = storage.db.Query(`
+			SELECT value
+			FROM metrics
+			WHERE name = $1
+			AND kind = $2
+			LIMIT 1
+		`,
+			name,
+			kind,
+		)
+
+		return err
+	}, 4, nil)
 
 	if err != nil {
 		return nil, err
