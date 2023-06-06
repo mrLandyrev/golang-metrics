@@ -1,10 +1,11 @@
 package app
 
 import (
+	"context"
 	"database/sql"
 	"log"
 	"net/http"
-	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mrLandyrev/golang-metrics/internal/metrics"
@@ -17,19 +18,33 @@ import (
 )
 
 type ServerApp struct {
-	router  *gin.Engine
-	address string
+	server *http.Server
+	db     *sql.DB
+	flush  func() error
 }
 
 func (app *ServerApp) Run() {
-	http.ListenAndServe(app.address, app.router)
+	go func() {
+		app.server.ListenAndServe()
+	}()
+}
+
+func (app *ServerApp) Stop() {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	app.server.Shutdown(ctx)
+	if app.flush != nil {
+		app.flush()
+	}
+	if app.db != nil {
+		app.db.Close()
+	}
 }
 
 func NewServerApp(config ServerConfig) *ServerApp {
 	logger, err := zap.NewDevelopment()
 	if err != nil {
 		log.Fatalln("Cannot create logger")
-		os.Exit(0)
 	}
 
 	db, err := sql.Open("pgx", config.DatabaseConnection)
@@ -38,11 +53,14 @@ func NewServerApp(config ServerConfig) *ServerApp {
 	}
 
 	var metricsRepository service.MetricsRepository
+	var flushCallback func() error
 	// build dependencies
 	if config.DatabaseConnection != "" {
 		metricsRepository, _ = storage.NewDatabaseMetricsRepository(db)
 	} else if config.FileStoragePath != "" {
-		metricsRepository, _ = storage.NewFileMetricsRepository(config.FileStoragePath, config.StoreInterval, config.NeedRestore)
+		fileMetricsRepository, _ := storage.NewFileMetricsRepository(config.FileStoragePath, config.StoreInterval, config.NeedRestore)
+		metricsRepository = fileMetricsRepository
+		flushCallback = fileMetricsRepository.Flush
 	} else {
 		metricsRepository = storage.NewMemoryMetricsRepository()
 	}
@@ -64,5 +82,10 @@ func NewServerApp(config ServerConfig) *ServerApp {
 	router.GET("/value/:kind/:name", rest.BuildGetMetricHandler(metricsService))
 	router.GET("/ping", rest.BuildPingHandler(db))
 
-	return &ServerApp{router: router, address: config.Address}
+	server := http.Server{
+		Addr:    config.Address,
+		Handler: router,
+	}
+
+	return &ServerApp{server: &server, db: db, flush: flushCallback}
 }
