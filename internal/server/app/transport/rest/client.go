@@ -61,10 +61,10 @@ func (client *HTTPClient) SendMetrics(metrics []metrics.Metric) error {
 	err = retry.HandleFunc(func() error {
 		var err error
 		response, err = client.httpClient.Do(req)
+		defer response.Body.Close()
 		if err != nil {
 			return err
 		}
-		response.Body.Close()
 
 		return err
 	}, 4, nil)
