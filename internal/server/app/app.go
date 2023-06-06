@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -47,6 +48,8 @@ func NewServerApp(config ServerConfig) *ServerApp {
 		log.Fatalln("Cannot create logger")
 	}
 
+	logger.Debug(fmt.Sprint(config))
+
 	db, err := sql.Open("pgx", config.DatabaseConnection)
 	if err != nil {
 		logger.Fatal("Cannot connect database")
@@ -56,9 +59,15 @@ func NewServerApp(config ServerConfig) *ServerApp {
 	var flushCallback func() error
 	// build dependencies
 	if config.DatabaseConnection != "" {
-		metricsRepository, _ = storage.NewDatabaseMetricsRepository(db)
+		metricsRepository, err = storage.NewDatabaseMetricsRepository(db)
+		if err != nil {
+			logger.Fatal(err.Error())
+		}
 	} else if config.FileStoragePath != "" {
-		fileMetricsRepository, _ := storage.NewFileMetricsRepository(config.FileStoragePath, config.StoreInterval, config.NeedRestore)
+		fileMetricsRepository, err := storage.NewFileMetricsRepository(config.FileStoragePath, config.StoreInterval, config.NeedRestore)
+		if err != nil {
+			logger.Fatal(err.Error())
+		}
 		metricsRepository = fileMetricsRepository
 		flushCallback = fileMetricsRepository.Flush
 	} else {
