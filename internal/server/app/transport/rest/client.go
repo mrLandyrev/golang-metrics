@@ -57,14 +57,13 @@ func (client *HTTPClient) SendMetrics(metrics []metrics.Metric) error {
 		return err
 	}
 	req.Header.Set("Content-Encoding", "gzip")
-	var response *http.Response
 	err = retry.HandleFunc(func() error {
 		var err error
-		response, err = client.httpClient.Do(req)
-		defer response.Body.Close()
+		response, err := client.httpClient.Do(req)
 		if err != nil {
 			return err
 		}
+		response.Body.Close()
 
 		return err
 	}, 4, nil)
