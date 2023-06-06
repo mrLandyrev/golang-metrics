@@ -61,6 +61,9 @@ func (client *HTTPClient) SendMetrics(metrics []metrics.Metric) error {
 	err = retry.HandleFunc(func() error {
 		var err error
 		response, err = client.httpClient.Do(req)
+		if err != nil {
+			return err
+		}
 		response.Body.Close()
 
 		return err

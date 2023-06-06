@@ -3,7 +3,6 @@ package app
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -47,8 +46,6 @@ func NewServerApp(config ServerConfig) *ServerApp {
 	if err != nil {
 		log.Fatalln("Cannot create logger")
 	}
-
-	logger.Debug(fmt.Sprint(config))
 
 	db, err := sql.Open("pgx", config.DatabaseConnection)
 	if err != nil {
