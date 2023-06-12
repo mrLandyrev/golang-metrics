@@ -4,7 +4,9 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
 	"time"
 
 	"github.com/mrLandyrev/golang-metrics/internal/server/app"
@@ -56,5 +58,11 @@ func buildConfig() {
 
 func main() {
 	buildConfig()
-	app.NewServerApp(config).Run()
+	app := app.NewServerApp(config)
+	app.Run()
+	var gracefulStop = make(chan os.Signal, 1)
+	signal.Notify(gracefulStop, syscall.SIGTERM)
+	signal.Notify(gracefulStop, syscall.SIGINT)
+	<-gracefulStop
+	app.Stop()
 }

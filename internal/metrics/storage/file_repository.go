@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/mrLandyrev/golang-metrics/internal/metrics"
@@ -122,15 +120,6 @@ func NewFileMetricsRepository(filename string, storeInterval time.Duration, Need
 				repo.Flush()
 				time.Sleep(storeInterval)
 			}
-		}()
-
-		var gracefulStop = make(chan os.Signal, 1)
-		signal.Notify(gracefulStop, syscall.SIGTERM)
-		signal.Notify(gracefulStop, syscall.SIGINT)
-		go func() {
-			<-gracefulStop
-			repo.Flush()
-			os.Exit(0)
 		}()
 	}
 
