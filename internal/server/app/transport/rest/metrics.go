@@ -151,3 +151,45 @@ func BuildGetAllMetricHandler(MetricsService MetricsService) gin.HandlerFunc {
 		})
 	}
 }
+
+func BuildJSONBatchUpdateMetricsHandler(metricsService MetricsService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var m []Metric
+		err := c.BindJSON(&m)
+		if err != nil {
+			c.Status(http.StatusBadRequest)
+			return
+		}
+
+		var recordValue string
+		for _, metric := range m {
+			switch metric.MType {
+			case "gauge":
+				recordValue = strconv.FormatFloat(*metric.Value, 'f', -1, 64)
+			case "counter":
+				recordValue = strconv.FormatInt(*metric.Delta, 10)
+			default:
+				c.Status(http.StatusNotImplemented)
+				return
+			}
+
+			_, err := metricsService.AddRecord(metric.MType, metric.ID, recordValue)
+
+			switch err {
+			case nil:
+				continue
+			case metrics.ErrUnknownMetricKind:
+				c.Status(http.StatusNotImplemented)
+				return
+			case metrics.ErrIncorrectMetricValue:
+				c.Status(http.StatusBadRequest)
+				return
+			default:
+				c.Status(http.StatusInternalServerError)
+				return
+			}
+		}
+
+		c.Status(http.StatusOK)
+	}
+}
