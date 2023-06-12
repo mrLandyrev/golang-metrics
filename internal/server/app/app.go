@@ -1,8 +1,10 @@
 package app
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mrLandyrev/golang-metrics/internal/metrics"
@@ -10,6 +12,8 @@ import (
 	"github.com/mrLandyrev/golang-metrics/internal/server/app/transport/rest"
 	"github.com/mrLandyrev/golang-metrics/internal/server/metrics/service"
 	"go.uber.org/zap"
+
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 type ServerApp struct {
@@ -37,6 +41,11 @@ func NewServerApp(config ServerConfig) *ServerApp {
 	metricsFactory := metrics.NewMetricsFactory()
 	metricsService := service.NewMetricsService(metricsRepository, metricsFactory)
 
+	db, err := sql.Open("pgx", config.DatabaseConnection)
+	if err != nil {
+		os.Exit(0)
+	}
+
 	router := gin.New()
 
 	router.Use(rest.LoggingMiddleware(logger))
@@ -49,6 +58,7 @@ func NewServerApp(config ServerConfig) *ServerApp {
 	router.POST("/update", rest.BuildJSONUpdateMetricHandler(metricsService))
 	router.POST("/value", rest.BuildJSONGetMetricHandler(metricsService))
 	router.GET("/value/:kind/:name", rest.BuildGetMetricHandler(metricsService))
+	router.GET("/ping", rest.BuildPingHandler(db))
 
 	return &ServerApp{router: router, address: config.Address}
 }

@@ -18,6 +18,7 @@ func buildConfig() {
 	flag.IntVar(&storeInterval, "i", 300, "time between store metrics to file")
 	flag.StringVar(&config.FileStoragePath, "f", "/tmp/metrics-db.json", "path to file where storage metrics")
 	flag.BoolVar(&config.NeedRestore, "r", true, "need restore data on startup")
+	flag.StringVar(&config.DatabaseConnection, "d", "", "database connection string")
 	flag.Parse()
 
 	if envA := os.Getenv("ADDRESS"); envA != "" {
@@ -46,6 +47,10 @@ func buildConfig() {
 		} else {
 			config.NeedRestore = parsed
 		}
+	}
+
+	if envD := os.Getenv("DATABASE_DSN"); envD != "" {
+		config.DatabaseConnection = envD
 	}
 }
 
