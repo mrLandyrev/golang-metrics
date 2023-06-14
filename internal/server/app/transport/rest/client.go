@@ -3,7 +3,10 @@ package rest
 import (
 	"bytes"
 	"compress/gzip"
+	"crypto/hmac"
+	"crypto/sha256"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	retry "github.com/mrLandyrev/golang-metrics/internal"
@@ -13,6 +16,7 @@ import (
 type HTTPClient struct {
 	httpClient http.Client
 	addr       string
+	signKey    string
 }
 
 func (client *HTTPClient) SendMetric(metric metrics.Metric) error {
@@ -57,6 +61,14 @@ func (client *HTTPClient) SendMetrics(metrics []metrics.Metric) error {
 		return err
 	}
 	req.Header.Set("Content-Encoding", "gzip")
+
+	if client.signKey != "" {
+		signer := hmac.New(sha256.New, []byte(client.signKey))
+		signer.Write(jBody)
+		sign := signer.Sum(nil)
+		req.Header.Set("HashSHA256", fmt.Sprintf("%x", sign))
+	}
+
 	err = retry.HandleFunc(func() error {
 		var err error
 		response, err := client.httpClient.Do(req)
@@ -75,6 +87,6 @@ func (client *HTTPClient) SendMetrics(metrics []metrics.Metric) error {
 	return err
 }
 
-func NewHTTPClient(addr string) *HTTPClient {
-	return &HTTPClient{httpClient: http.Client{}, addr: addr}
+func NewHTTPClient(addr string, signKey string) *HTTPClient {
+	return &HTTPClient{httpClient: http.Client{}, addr: addr, signKey: signKey}
 }

@@ -15,6 +15,7 @@ func buildConfig() {
 	flag.StringVar(&config.ServerAddress, "a", "localhost:8080", "metrics server address")
 	flag.IntVar(&config.SyncInteval, "r", 10, "time between sync metrics with server in seconds")
 	flag.IntVar(&config.CollectInterval, "p", 2, "time between run collect metrics in seconds")
+	flag.StringVar(&config.SignKey, "k", "", "sign data key")
 	flag.Parse()
 
 	if envA := os.Getenv("ADDRESS"); envA != "" {
@@ -37,6 +38,10 @@ func buildConfig() {
 		} else {
 			config.CollectInterval = parsed
 		}
+	}
+
+	if envK := os.Getenv("KEY"); envK != "" {
+		config.SignKey = envK
 	}
 }
 
