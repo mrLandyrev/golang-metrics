@@ -56,7 +56,7 @@ func (client *HTTPClient) SendMetrics(metrics []metrics.Metric) error {
 	gzipWriter := gzip.NewWriter(&body)
 	gzipWriter.Write(jBody)
 	gzipWriter.Flush()
-	req, err := http.NewRequest(http.MethodPost, "http://"+client.addr+"/updates/", &body)
+	req, err := http.NewRequest(http.MethodPost, "http://"+client.addr+"/updates", &body)
 	if err != nil {
 		return err
 	}
