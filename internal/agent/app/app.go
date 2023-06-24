@@ -1,6 +1,8 @@
 package app
 
 import (
+	"context"
+	"fmt"
 	"time"
 
 	"github.com/mrLandyrev/golang-metrics/internal/agent/metrics/collect/exporters"
@@ -23,18 +25,42 @@ type AgentApp struct {
 	syncService     SyncService
 	syncInterval    int
 	collectInterval int
+	cancel          context.CancelFunc
 }
 
 func (app *AgentApp) Run() {
-	for i := 1; ; i++ {
-		if (i % app.collectInterval) == 0 {
-			_ = app.collectService.Collect()
+	ctx, cancel := context.WithCancel(context.Background())
+	go func(ctx context.Context) {
+		for {
+			fmt.Println("sync")
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				_ = app.syncService.SyncMetrics()
+			}
+
+			time.Sleep(time.Duration(app.collectInterval) * time.Second)
 		}
-		if (i % app.syncInterval) == 0 {
-			_ = app.syncService.SyncMetrics()
+	}(ctx)
+	go func(ctx context.Context) {
+		for {
+			fmt.Println("collect")
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				_ = app.collectService.Collect()
+			}
+
+			time.Sleep(time.Duration(app.syncInterval) * time.Second)
 		}
-		time.Sleep(time.Second)
-	}
+	}(ctx)
+	app.cancel = cancel
+}
+
+func (app *AgentApp) Stop() {
+	app.cancel()
 }
 
 func NewAgentApp(config Config) *AgentApp {

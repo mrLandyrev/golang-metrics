@@ -4,7 +4,9 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
 
 	"github.com/mrLandyrev/golang-metrics/internal/agent/app"
 )
@@ -47,5 +49,11 @@ func buildConfig() {
 
 func main() {
 	buildConfig()
-	app.NewAgentApp(config).Run()
+	agent := app.NewAgentApp(config)
+	agent.Run()
+	var gracefulStop = make(chan os.Signal, 1)
+	signal.Notify(gracefulStop, syscall.SIGTERM)
+	signal.Notify(gracefulStop, syscall.SIGINT)
+	<-gracefulStop
+	agent.Stop()
 }
