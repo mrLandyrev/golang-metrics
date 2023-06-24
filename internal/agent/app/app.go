@@ -46,7 +46,7 @@ func NewAgentApp(config Config) *AgentApp {
 	collectService.RegisterExporter(exporters.NewRandomExproter())
 	collectService.RegisterExporter(exporters.NewRuntimeExporter())
 
-	syncClient := rest.NewHTTPClient(config.ServerAddress)
+	syncClient := rest.NewHTTPClient(config.ServerAddress, config.SignKey)
 	syncService := service.NewSyncService(metricsRepository, syncClient)
 
 	return &AgentApp{syncService: syncService, collectService: collectService, syncInterval: config.SyncInteval, collectInterval: config.CollectInterval}

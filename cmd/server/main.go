@@ -21,6 +21,7 @@ func buildConfig() {
 	flag.StringVar(&config.FileStoragePath, "f", "/tmp/metrics-db.json", "path to file where storage metrics")
 	flag.BoolVar(&config.NeedRestore, "r", true, "need restore data on startup")
 	flag.StringVar(&config.DatabaseConnection, "d", "", "database connection string")
+	flag.StringVar(&config.SignKey, "k", "", "sign data key")
 	flag.Parse()
 
 	if envA := os.Getenv("ADDRESS"); envA != "" {
@@ -53,6 +54,10 @@ func buildConfig() {
 
 	if envD := os.Getenv("DATABASE_DSN"); envD != "" {
 		config.DatabaseConnection = envD
+	}
+
+	if envK := os.Getenv("KEY"); envK != "" {
+		config.SignKey = envK
 	}
 }
 

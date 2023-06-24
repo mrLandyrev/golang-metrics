@@ -1,6 +1,10 @@
 package rest
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -152,13 +156,33 @@ func BuildGetAllMetricHandler(MetricsService MetricsService) gin.HandlerFunc {
 	}
 }
 
-func BuildJSONBatchUpdateMetricsHandler(metricsService MetricsService) gin.HandlerFunc {
+func BuildJSONBatchUpdateMetricsHandler(metricsService MetricsService, signKey string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var m []Metric
 		err := c.BindJSON(&m)
 		if err != nil {
 			c.Status(http.StatusBadRequest)
 			return
+		}
+
+		if signKey != "" {
+			headerSign := c.Request.Header.Get("HashSHA256")
+
+			if headerSign == "" {
+				c.Status(http.StatusBadRequest)
+				return
+			}
+
+			jBody, _ := json.Marshal(&m)
+
+			localSigner := hmac.New(sha256.New, []byte(signKey))
+			localSigner.Write(jBody)
+			localSign := localSigner.Sum(nil)
+
+			if fmt.Sprintf("%x", localSign) != headerSign {
+				c.Status(http.StatusBadRequest)
+				return
+			}
 		}
 
 		var recordValue string

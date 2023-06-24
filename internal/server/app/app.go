@@ -82,9 +82,9 @@ func NewServerApp(config ServerConfig) *ServerApp {
 	router.LoadHTMLGlob("templates/*.html")
 	router.GET("/", rest.BuildGetAllMetricHandler(metricsService))
 	router.POST("/update/:kind/:name/:value", rest.BuildUpdateMetricHandler(metricsService))
-	router.POST("/update", rest.BuildJSONUpdateMetricHandler(metricsService))
-	router.POST("/value", rest.BuildJSONGetMetricHandler(metricsService))
-	router.POST("/updates", rest.BuildJSONBatchUpdateMetricsHandler(metricsService))
+	router.POST("/update/", rest.BuildJSONUpdateMetricHandler(metricsService))
+	router.POST("/value/", rest.BuildJSONGetMetricHandler(metricsService))
+	router.POST("/updates/", rest.BuildJSONBatchUpdateMetricsHandler(metricsService, config.SignKey))
 	router.GET("/value/:kind/:name", rest.BuildGetMetricHandler(metricsService))
 	router.GET("/ping", rest.BuildPingHandler(db))
 

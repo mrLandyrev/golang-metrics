@@ -8,4 +8,5 @@ type ServerConfig struct {
 	FileStoragePath    string
 	NeedRestore        bool
 	DatabaseConnection string
+	SignKey            string
 }
